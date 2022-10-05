@@ -32,18 +32,20 @@ def iniciar():
     while not terminou_algoritmo:
         try:
             input_algoritmo = int(input("Algoritmo: "))
+            print()
+            print()
             algoritmo_escolhido = switch_case_algoritmos[input_algoritmo]["algoritmo"]
             terminou_algoritmo = True
         except ValueError:
             print("Por favor, informe um inteiro")
         except KeyError:
             print("Informe um código válido")
-    resultado = algoritmo_escolhido(estado_inicial, estado_final)
+
+        resultado = algoritmo_escolhido(estado_inicial, estado_final)
     # acoes, nodos_visitados, nodos_expandidos, tamanho = resultado
 
     print()
-    print("Resultados:")
-    print(resultado)
+    print_resultado(resultado)
 
 
 def get_estado_final_default():
@@ -66,8 +68,9 @@ def get_estado():
                 else:
                     estado.append(linha_list)
                     terminou_linha = True
-        if "*" not in [item for linha in estado for item in linha]:
-            print("Não informado espaço vazio")
+        estado_flat = [item for linha in estado for item in linha]
+        if "*" not in estado_flat or estado_flat.count("*") > 1:
+            print("Não informado espaço vazio ou mais de um espaço vazio informado")
         else:
             print()
             print("Correto?")
@@ -85,15 +88,34 @@ def pergunta_validade():
 
 
 def print_estado(estado):
+    print(__print_estado(estado))
+
+
+def __print_estado(estado, espaco_linha=""):
     len_estado = len(estado)
-    print("---"*len_estado)
+    texto = espaco_linha + "---"*len_estado + "\n"
     for i in range(len_estado):
-        texto_linha = "| "
+        texto_linha = espaco_linha + "| "
         for j in range(len_estado):
             texto_linha += f"{estado[i][j]} "
         texto_linha += "|"
-        print(texto_linha)
-    print("---"*len_estado)
+        texto += texto_linha + "\n"
+    texto += espaco_linha + "---"*len_estado
+    return texto
+
+
+def print_resultado(resultado: tuple):
+    duracao, qtd_nodos_visitados, caminho, tamanho_fronteira, qtd_nodos_criados = resultado
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" + "\n" +
+          f"Duração:                 {duracao}ms" + "\n" +
+          f"Nodos visitados:         {qtd_nodos_visitados}" + "\n" +
+          f"Tamanho caminho:         {len(caminho)}" + "\n" +
+          f"Tamanho max. fronteira:  {tamanho_fronteira}" + "\n" +
+          f"Nodos criados:           {qtd_nodos_criados}" + "\n" +
+          "Caminho:" + "\n")
+    for index, estado in enumerate(caminho):
+        print(f"    Passo {index+1}:\n{__print_estado(estado, '      ')}")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
 
 
 if __name__ == '__main__':
