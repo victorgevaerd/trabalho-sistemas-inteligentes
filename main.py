@@ -1,6 +1,5 @@
-from algoritmos.custo_uniforme import pesquisar as pesquisar_custo_uniforme
-from algoritmos.a_estrela_simples import pesquisar as pesquisar_a_estrela_simples
-from algoritmos.a_estrela_precisa import pesquisar as pesquisar_a_estrela_precisa
+from util.arvore_pesquisa import ArvorePesquisa
+from util.enums import AlgoritmosPesquisaEnum
 
 
 def iniciar():
@@ -20,32 +19,32 @@ def iniciar():
         estado_final = get_estado()
 
     switch_case_algoritmos = {
-        1: {"nome": "Custo Uniforme (sem heurística)", "algoritmo": pesquisar_custo_uniforme},
-        2: {"nome": "A* com uma heurística simples", "algoritmo": pesquisar_a_estrela_simples},
-        3: {"nome": "A* com a heurística mais precisa que conseguirem", "algoritmo": pesquisar_a_estrela_precisa}
+        1: AlgoritmosPesquisaEnum.CUSTO_UNIFORME,
+        2: AlgoritmosPesquisaEnum.A_ESTRELA_SIMPLES,
+        3: AlgoritmosPesquisaEnum.A_ESTRELA_PRECISA
     }
     print()
     print("Escolha um algoritmo para realizar a pesquisa")
     for k, v in switch_case_algoritmos.items():
-        print(f'{k}: {v["nome"]}')
+        print(f'{k}: {v.value}')
     terminou_algoritmo = False
     while not terminou_algoritmo:
         try:
             input_algoritmo = int(input("Algoritmo: "))
             print()
             print()
-            algoritmo_escolhido = switch_case_algoritmos[input_algoritmo]["algoritmo"]
+            algoritmo_escolhido = switch_case_algoritmos[input_algoritmo]
             terminou_algoritmo = True
         except ValueError:
             print("Por favor, informe um inteiro")
         except KeyError:
             print("Informe um código válido")
 
-        resultado = algoritmo_escolhido(estado_inicial, estado_final)
-    # acoes, nodos_visitados, nodos_expandidos, tamanho = resultado
+        arvore_pesquisa = ArvorePesquisa(
+            estado_inicial, estado_final, algoritmo_escolhido)
 
     print()
-    print_resultado(resultado)
+    print_resultado(arvore_pesquisa.get_resultado())
 
 
 def get_estado_final_default():
@@ -105,13 +104,14 @@ def __print_estado(estado, espaco_linha=""):
 
 
 def print_resultado(resultado: tuple):
-    duracao, qtd_nodos_visitados, caminho, tamanho_fronteira, qtd_nodos_criados = resultado
+    duracao, qtd_nodos_visitados, caminho, tamanho_fronteira, qtd_nodos_criados, algoritmo = resultado
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-" + "\n" +
-          f"Duração:                 {duracao}ms" + "\n" +
-          f"Nodos visitados:         {qtd_nodos_visitados}" + "\n" +
-          f"Tamanho caminho:         {len(caminho)}" + "\n" +
-          f"Tamanho max. fronteira:  {tamanho_fronteira}" + "\n" +
-          f"Nodos criados:           {qtd_nodos_criados}" + "\n" +
+          algoritmo + "\n" +
+          f"Duração:             {duracao}ms" + "\n" +
+          f"Nodos criados:       {qtd_nodos_criados}" + "\n" +
+          f"Nodos visitados:     {qtd_nodos_visitados}" + "\n" +
+          f"Tamanho fronteira:   {tamanho_fronteira}" + "\n" +
+          f"Tamanho caminho:     {len(caminho)}" + "\n" +
           "Caminho:" + "\n")
     for index, estado in enumerate(caminho):
         print(f"    Passo {index+1}:\n{__print_estado(estado, '      ')}")
