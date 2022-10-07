@@ -1,5 +1,6 @@
 from copy import deepcopy, copy
 from datetime import datetime as dt
+from util.sem_solucao_exception import SemSolucaoException
 from util.nodes import Node, AEstrelaSimplesNode, AEstrelaPrecisaNode
 from util.enums import AcoesEnum, AlgoritmosPesquisaEnum
 
@@ -14,21 +15,60 @@ class ArvorePesquisa:
         self.__hora_inicio = dt.now()
         self.__tipo_node = algoritmo
         self.__init_primeiro_nodo(estado_inicial)
-        self.__pesquisa()
 
-    def __pesquisa(self):
-        achou_solucao = False
-        while len(self.__fronteira) and not achou_solucao:
-            nodo_pesquisado = self.__fronteira.pop(0)
-            self.__nodos_visitados.add(nodo_pesquisado.converte_tupla())
-            if self.__is_estado_final(nodo_pesquisado):
-                self.__nodo_resultado = nodo_pesquisado
-                achou_solucao = True
-            else:
-                nodos_filhos = self.__get_nodos_filhos(nodo_pesquisado)
-                for nodo_filho in nodos_filhos:
-                    if not self.__is_estado_visitado(nodo_filho):
-                        self.__adiciona_nodo_fronteira(nodo_filho)
+    def pesquisa(self):
+        if self.__verifica_solucionabilidade():
+            achou_solucao = False
+            while len(self.__fronteira) and not achou_solucao:
+                nodo_pesquisado = self.__fronteira.pop(0)
+                self.__nodos_visitados.add(nodo_pesquisado.converte_tupla())
+                if self.__is_estado_final(nodo_pesquisado):
+                    self.__nodo_resultado = nodo_pesquisado
+                    achou_solucao = True
+                else:
+                    nodos_filhos = self.__get_nodos_filhos(nodo_pesquisado)
+                    for nodo_filho in nodos_filhos:
+                        if not self.__is_estado_visitado(nodo_filho):
+                            self.__adiciona_nodo_fronteira(nodo_filho)
+            return self.get_resultado()
+        else:
+            raise SemSolucaoException
+
+    def __verifica_solucionabilidade(self):
+        estado_inicial = self.__fronteira[0].estado
+
+        def distancia_manhattan():
+            i, j = get_coordenada_vazio(estado_inicial)
+            x, y = get_coordenada_vazio(self.__estado_final)
+            distancia_manhattan = abs(i - x) + abs(j - y)
+            return distancia_manhattan
+
+        def get_coordenada_vazio(estado):
+            for i in range(len(estado)):
+                for j in range(len(estado)):
+                    if estado[i][j] == '*':
+                        return (i, j)
+            raise ValueError("Valor não encontrado")
+
+        def flatten_estado(estado):
+            return [item for linha in estado for item in linha]
+
+        estado_inicial_flat = flatten_estado(estado_inicial)
+        estado_objetivo_flat = flatten_estado(self.__estado_final)
+
+        inversoes = 0
+        for index, item in enumerate(estado_objetivo_flat[:-1]):
+            for item2 in estado_objetivo_flat[index+1:]:
+                i = 0
+                achou = False
+                while i < len(estado_inicial_flat) and not achou:
+                    if estado_inicial_flat[i] == item:
+                        achou = True
+                    else:
+                        if estado_inicial_flat[i] == item2:
+                            inversoes += 1
+                        i += 1
+        return inversoes % 2 == distancia_manhattan() % 2
 
     def __init_primeiro_nodo(self, estado_inicial):
         nodo = self.__cria_nodo(estado_inicial, None)

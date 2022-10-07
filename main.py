@@ -1,3 +1,4 @@
+from util.sem_solucao_exception import SemSolucaoException
 from util.arvore_pesquisa import ArvorePesquisa
 from util.enums import AlgoritmosPesquisaEnum
 
@@ -5,46 +6,58 @@ from util.enums import AlgoritmosPesquisaEnum
 def iniciar():
     print()
     print("/***********************\\")
-    print("|     Bem Vindo         |")
+    print("|       Bem Vindo       |")
     print("\\***********************/")
     print()
-    print("Por favor, informe o estado inicial (use ' * ' para espaço vazio)")
 
-    estado_inicial = get_estado()
-    estado_final = get_estado_final_default()
-    print()
-    print("Gostaria de usar esse estado final?")
-    print_estado(estado_final)
-    if not pergunta_validade():
-        estado_final = get_estado()
+    rodando_programa = True
+    while rodando_programa:
+        print("Por favor, informe o estado inicial (use ' * ' para espaço vazio)")
+        estado_inicial = get_estado()
+        estado_final = get_estado_final_default()
+        print()
+        print("Gostaria de usar esse estado final?")
+        print_estado(estado_final)
+        if not pergunta_validade():
+            estado_final = get_estado()
 
-    switch_case_algoritmos = {
-        1: AlgoritmosPesquisaEnum.CUSTO_UNIFORME,
-        2: AlgoritmosPesquisaEnum.A_ESTRELA_SIMPLES,
-        3: AlgoritmosPesquisaEnum.A_ESTRELA_PRECISA
-    }
-    print()
-    print("Escolha um algoritmo para realizar a pesquisa")
-    for k, v in switch_case_algoritmos.items():
-        print(f'{k}: {v.value}')
-    terminou_algoritmo = False
-    while not terminou_algoritmo:
-        try:
-            input_algoritmo = int(input("Algoritmo: "))
-            print()
-            print()
-            algoritmo_escolhido = switch_case_algoritmos[input_algoritmo]
-            terminou_algoritmo = True
-        except ValueError:
-            print("Por favor, informe um inteiro")
-        except KeyError:
-            print("Informe um código válido")
+        switch_case_algoritmos = {
+            1: AlgoritmosPesquisaEnum.CUSTO_UNIFORME,
+            2: AlgoritmosPesquisaEnum.A_ESTRELA_SIMPLES,
+            3: AlgoritmosPesquisaEnum.A_ESTRELA_PRECISA
+        }
+        print()
+        print("Escolha um algoritmo para realizar a pesquisa")
+        for k, v in switch_case_algoritmos.items():
+            print(f'{k}: {v.value}')
+        terminou_algoritmo = False
+        while not terminou_algoritmo:
+            try:
+                input_algoritmo = int(input("Algoritmo: "))
+                print()
+                print()
+                algoritmo_escolhido = switch_case_algoritmos[input_algoritmo]
+                terminou_algoritmo = True
+            except ValueError:
+                print("Por favor, informe um inteiro")
+            except KeyError:
+                print("Informe um código válido")
 
         arvore_pesquisa = ArvorePesquisa(
             estado_inicial, estado_final, algoritmo_escolhido)
-
-    print()
-    print_resultado(arvore_pesquisa.get_resultado())
+        try:
+            arvore_pesquisa.pesquisa()
+            print()
+            print_resultado(arvore_pesquisa.get_resultado())
+            rodando_programa = False
+        except SemSolucaoException as e:
+            print()
+            print(e)
+            print()
+            print("Gostaria de tentar de novo?")
+            if not pergunta_validade():
+                rodando_programa = False
+            print()
 
 
 def get_estado_final_default():
